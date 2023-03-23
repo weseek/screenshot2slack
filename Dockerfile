@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:16-slim
 LABEL maintainer "Ryuma Yoshida <ryuma.y1117@gmail.com>"
 
 RUN apt-get update \
