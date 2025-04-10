@@ -1,6 +1,6 @@
 const fs = require('fs');
-const request = require('request');
 const puppeteer = require('puppeteer');
+const { WebClient } = require('@slack/web-api')
 
 // For puppeteer
 const TARGET_URL = process.env.TARGET_URL || 'https://github.com';
@@ -10,7 +10,6 @@ const HEIGHT = process.env.HEIGHT || 768;
 const FULL_PAGE = process.env.FULL_PAGE;
 
 // For posting to slack
-const API_URL = 'https://slack.com/api/files.upload';
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 const CHANNEL = process.env.CHANNEL || 'general';
 
@@ -35,7 +34,7 @@ async function loginWithCookie(page, cookiesStr) {
   const BASIC_AUTH_USERNAME = process.env.BASIC_AUTH_USERNAME;
   const BASIC_AUTH_PASSWORD = process.env.BASIC_AUTH_PASSWORD;
   if (BASIC_AUTH_USERNAME != null && BASIC_AUTH_PASSWORD != null) {
-    await page.authenticate({username: BASIC_AUTH_USERNAME, password: BASIC_AUTH_PASSWORD});
+    await page.authenticate({ username: BASIC_AUTH_USERNAME, password: BASIC_AUTH_PASSWORD });
   }
   // Set Cookie
   if (process.env.COOKIES != null) {
@@ -51,25 +50,33 @@ async function loginWithCookie(page, cookiesStr) {
   if (process.env.SCREENSHOT_DELAY_SEC != null) {
     await page.waitFor(process.env.SCREENSHOT_DELAY_SEC * 1000);
   }
-  await page.screenshot({path: FILE_NAME, fullPage: (FULL_PAGE==='true')});
+  await page.screenshot({ path: FILE_NAME, fullPage: (FULL_PAGE === 'true') });
 
   await browser.close();
 
-  var data = {
-    url: API_URL,
-    formData: {
-      token: SLACK_BOT_TOKEN,
-      filename: FILE_NAME,
-      file: fs.createReadStream('./' + FILE_NAME),
-      channels: CHANNEL
-    }
-  };
-  request.post(data, function(error, response, body) {
-      if (!error && response.statusCode == 200) {
-          console.log('Uploading a screenshot to slack is Success :)');
-      } else {
-          console.log('Uploading a screenshot to slack is Failure :(');
-      }
-  });
+  const web = new WebClient(SLACK_BOT_TOKEN)
 
+  // Get channel id
+  try {
+    const conversationsResponse = await web.conversations.list()
+    const channel = conversationsResponse.channels.find((it) => {
+      return it.name === CHANNEL
+    })
+
+    if (channel == null) {
+      throw new Error(`${CHANNEL} channel is not found.`)
+    }
+
+    // Upload file
+    await web.filesUploadV2({
+      channel_id: channel.id,
+      file: fs.createReadStream('./' + FILE_NAME),
+      filename: FILE_NAME,
+    })
+
+    console.log('Uploading a screenshot to slack is Success :)');
+  } catch (error) {
+    console.log('Uploading a screenshot to slack is Failure :(');
+    console.log(error);
+  }
 })();

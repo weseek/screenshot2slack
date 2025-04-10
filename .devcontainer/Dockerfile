@@ -1,5 +1,4 @@
-FROM node:22-slim
-LABEL maintainer "Ryuma Yoshida <ryuma.y1117@gmail.com>"
+FROM mcr.microsoft.com/devcontainers/base:bookworm
 
 RUN apt-get update \
  && apt-get install -y \
@@ -46,10 +45,3 @@ RUN apt-get update \
 RUN apt-get update \
  && apt-get install -y \
       fonts-takao
-
-WORKDIR /app/screenshot2slack
-
-COPY . .
-RUN yarn install
-
-ENTRYPOINT ["node", "/app/screenshot2slack/main.js"]
