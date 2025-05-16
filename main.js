@@ -12,6 +12,8 @@ const FULL_PAGE = process.env.FULL_PAGE;
 // For posting to slack
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 const CHANNEL = process.env.CHANNEL || 'general';
+// refs: https://api.slack.com/methods/conversations.list
+const CONVERSATIONS_TYPES = process.env.CONVERSATIONS_TYPES || 'public_channel'
 
 async function loginWithCookie(page, cookiesStr) {
   const cookies = JSON.parse(cookiesStr);
@@ -58,7 +60,9 @@ async function loginWithCookie(page, cookiesStr) {
 
   // Get channel id
   try {
-    const conversationsResponse = await web.conversations.list()
+    const conversationsResponse = await web.conversations.list({
+      types: CONVERSATIONS_TYPES
+    })
     const channel = conversationsResponse.channels.find((it) => {
       return it.name === CHANNEL
     })
