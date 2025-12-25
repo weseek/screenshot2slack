@@ -1,6 +1,6 @@
 {
   "name": "screenshot2slack",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A tool uploading a screenshot to slack with puppeteer on docker",
   "main": "main.js",
   "repository": "https://github.com/ryysud/screenshot2slack.git",
@@ -11,7 +11,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@slack/web-api": "^7.9.1",
-    "puppeteer": "1.13.0",
+    "puppeteer": "^24.34.0",
     "request": "2.88.0"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"

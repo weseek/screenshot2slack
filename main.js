@@ -24,10 +24,14 @@ async function loginWithCookie(page, cookiesStr) {
 
 (async () => {
   const browser = await puppeteer.launch({
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
     args: [
       '--no-sandbox',
       `--window-size=${WIDTH},${HEIGHT}`,
-    ]
+    ],
+    // disable default viewport
+    // see https://github.com/GoogleChrome/puppeteer/issues/1183
+    defaultViewport: null
   });
 
   const page = await browser.newPage();
@@ -44,13 +48,12 @@ async function loginWithCookie(page, cookiesStr) {
   }
 
   await page.goto(TARGET_URL);
-  //// disable default viewport
-  // see https://github.com/GoogleChrome/puppeteer/issues/1183
-  await page._client.send('Emulation.clearDeviceMetricsOverride');
 
   // Wait delay
   if (process.env.SCREENSHOT_DELAY_SEC != null) {
-    await page.waitFor(process.env.SCREENSHOT_DELAY_SEC * 1000);
+    // await page.waitForTimeout(process.env.SCREENSHOT_DELAY_SEC * 1000);
+    // waitForTimeout は 22.0.0 で消されたので下記で代替
+    await new Promise(resolve => setTimeout(resolve, process.env.SCREENSHOT_DELAY_SEC * 1000));
   }
   await page.screenshot({ path: FILE_NAME, fullPage: (FULL_PAGE === 'true') });
 
